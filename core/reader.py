@@ -3,8 +3,8 @@
 #  A reader class to generate a grid and its agents from a given input file.
 # =============================================================================
 
-from agent import Agent
-from graph import Graph
+from .agent import Agent
+from .graph import Graph
 
 class Reader:
 	@staticmethod
