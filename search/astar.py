@@ -1,18 +1,18 @@
-# gbfs.py
+# astar.py
 # =============================================================================
-#  The Greedy Best-first search algorithm, a search algorithm that explores
-#  nodes with the lowest heuristic value first.
+#  The A* search algorithm, a search algorithm that prioritizing nodes with
+#  the sum of its accumulated path cost and its heuristic value.
 # =============================================================================
 
 from . import best
 from search.best import Best
 
-class GBFS(Best):
+class AStar(Best):
 	def __init__(self):
-		super().__init__(best.EarlyTest)
+		super().__init__(best.LateTest)
 
 	def cost(self, graph, agent, cur, next):
-		return 0
+		return 1
 
 	def heuristic(self, graph, agent, cur):
 		return graph.manhattan(cur, agent.end)

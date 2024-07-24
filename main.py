@@ -4,6 +4,7 @@ from core import Agent
 from search import BFS
 from search import DFS
 from search import GBFS
+from search import AStar
 
 graph, agents = Reader.read('testcase/input.txt')
 agent = Agent(agents[0].start, agents[0].end)
@@ -34,6 +35,18 @@ print(expanded, '\n')
 # =============================================================================
 
 search = GBFS()
+print('Search: ', search, '\n')
+
+search.run(graph, agent)
+path = search.path
+expanded = search.expanded
+
+print(path, '\n')
+print(expanded, '\n')
+
+# =============================================================================
+
+search = AStar()
 print('Search: ', search, '\n')
 
 search.run(graph, agent)
