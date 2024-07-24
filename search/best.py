@@ -49,7 +49,7 @@ class Best(Search, ABC):
 
 			# Late goal test
 			if self._tag == LateTest and cur == agent.end:
-				self.trace(self, predecessor, agent.start, agent.end)
+				self.trace(predecessor, agent.start, agent.end)
 				return
 			
 			directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
@@ -80,7 +80,7 @@ class Best(Search, ABC):
 					if agent.optimize_fuel and new_fuel < 0: continue
 					if next == agent.end:
 						predecessor[next] = cur
-						self.trace(self, predecessor, agent.start, agent.end)
+						self.trace(predecessor, agent.start, agent.end)
 						return
 
 				frontier.put(Node(next, cur, new_cost, new_heuristic, new_time, new_fuel))

@@ -22,7 +22,6 @@ class Search(ABC):
 	def run(self, graph, agent):
 		pass
 
-	@staticmethod
 	def trace(self, predecessor: dict, start: tuple, end: tuple):
 		self._path = []
 
