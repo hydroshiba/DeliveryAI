@@ -8,6 +8,7 @@ class Graph:
 	def __init__(self, width: int, height: int):
 		self._width = width
 		self._height = height
+
 		self._toll = [[0 for _ in range(width)] for _ in range(height)]
 		self._fuel = [[0 for _ in range(width)] for _ in range(height)]
 
@@ -46,3 +47,9 @@ class Graph:
 	@property
 	def fuel(self):
 		return self._fuel
+	
+	def manhattan(self, start: tuple, end: tuple):
+		return abs(start[0] - end[0]) + abs(start[1] - end[1])
+	
+	def euclidean(self, start: tuple, end: tuple):
+		return ((start[0] - end[0]) ** 2 + (start[1] - end[1]) ** 2) ** 0.5
