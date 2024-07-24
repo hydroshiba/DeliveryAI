@@ -1,6 +1,6 @@
 # ucs.py
 # =============================================================================
-#  The Uniform Cost Search algorithm, a search algorithm that explores nodes
+#  The Uniform Cost search algorithm, a search algorithm that explores nodes
 #  with the lowest accumulated path cost, similar to Dijkstra's algorithm.
 #
 #  In this specific case which the graph is a grid, the cost moving from one
