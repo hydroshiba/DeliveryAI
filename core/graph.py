@@ -48,8 +48,10 @@ class Graph:
 	def fuel(self):
 		return self._fuel
 	
-	def manhattan(self, start: tuple, end: tuple):
+	@staticmethod
+	def manhattan(start: tuple, end: tuple):
 		return abs(start[0] - end[0]) + abs(start[1] - end[1])
 	
-	def euclidean(self, start: tuple, end: tuple):
+	@staticmethod
+	def euclidean(start: tuple, end: tuple):
 		return ((start[0] - end[0]) ** 2 + (start[1] - end[1]) ** 2) ** 0.5
