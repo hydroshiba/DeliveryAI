@@ -6,13 +6,13 @@
 
 from abc import ABC, abstractmethod
 from queue import PriorityQueue
-from .base import Search
 
-class EarlyTest:
-	pass
+from core import Node
+from search import Search
 
-class LateTest:
-	pass
+# Goal test tags
+class EarlyTest: pass
+class LateTest: pass
 
 class Best(Search, ABC):
 	def __init__(self, tag):
@@ -27,27 +27,13 @@ class Best(Search, ABC):
 	def heuristic(self, graph, agent, cur):
 		pass
 
-	class Node:
-		def __init__(self, state, parent, cost, heuristic, time = 0, fuel = 0):
-			self._state = state
-			self._parent = parent
-
-			self._cost = cost
-			self._heuristic = heuristic
-
-			self._time = time
-			self._fuel = fuel
-
-		def __lt__(self, other):
-			return self._cost + self._heuristic < other._cost + other._heuristic
-
-	def search(self, graph, agent):
+	def run(self, graph, agent):
 		frontier = PriorityQueue()
 		visited = set()
 		predecessor = dict()
 		self._expanded = []
 
-		frontier.put(self.Node(agent.start, None, 0, 0))
+		frontier.put(Node(agent.start, None, 0, 0))
 
 		while not frontier.empty():
 			node = frontier.get()
@@ -97,4 +83,4 @@ class Best(Search, ABC):
 						self.trace(self, predecessor, agent.start, agent.end)
 						return
 
-				frontier.put(self.Node(next, cur, new_cost, new_heuristic, new_time, new_fuel))
+				frontier.put(Node(next, cur, new_cost, new_heuristic, new_time, new_fuel))

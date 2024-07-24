@@ -1,4 +1,4 @@
-from .base import Search
+from .search import Search
 from .best import Best
 
 from .bfs import BFS

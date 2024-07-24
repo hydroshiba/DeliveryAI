@@ -19,7 +19,7 @@ class Search(ABC):
 		return self._expanded
 
 	@abstractmethod
-	def search(self, graph, agent):
+	def run(self, graph, agent):
 		pass
 
 	@staticmethod

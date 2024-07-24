@@ -12,7 +12,7 @@ print('Agent: ', agent.start, agent.end, '\n')
 search = BFS()
 print('Search: ', search, '\n')
 
-search.search(graph, agent)
+search.run(graph, agent)
 path = search.path
 expanded = search.expanded
 
@@ -24,7 +24,7 @@ print(expanded, '\n')
 search = DFS()
 print('Search: ', search, '\n')
 
-search.search(graph, agent)
+search.run(graph, agent)
 path = search.path
 expanded = search.expanded
 
@@ -36,7 +36,7 @@ print(expanded, '\n')
 search = GBFS()
 print('Search: ', search, '\n')
 
-search.search(graph, agent)
+search.run(graph, agent)
 path = search.path
 expanded = search.expanded
 
