@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from queue import PriorityQueue
 
 from core import Node
+from core import Heap
 from search import Search
 
 # Goal test tags
@@ -27,13 +28,24 @@ class Best(Search, ABC):
 	def heuristic(self, graph, agent, cur):
 		pass
 
+	@abstractmethod
+	def compare(self, u, v):
+		pass
+
 	def run(self, graph, agent):
-		frontier = PriorityQueue()
+		frontier = Heap(self.compare)
 		visited = set()
 		predecessor = dict()
 		self._expanded = []
 
-		frontier.put(Node(agent.start, None, 0, 0))
+		frontier.put(Node(
+			agent.start,
+			None,
+			0,
+			0,
+			0 if agent.optimize_time else None,
+			0 if agent.optimize_fuel else None
+		))
 
 		while not frontier.empty():
 			node = frontier.get()
@@ -45,7 +57,7 @@ class Best(Search, ABC):
 
 			visited.add(cur)
 			self._expanded.append(cur)
-			predecessor[cur] = parent
+			if predecessor.get(cur) is None: predecessor[cur] = parent
 
 			# Late goal test
 			if self._tag == LateTest and cur == agent.end:
@@ -66,13 +78,13 @@ class Best(Search, ABC):
 				# Optimize time
 				if agent.optimize_time:
 					new_time = time + graph.toll[next[0]][next[1]] + self.cost(graph, agent, cur, next)
-				else: new_time = 0
+				else: new_time = None
 
 				# Optimize fuel
 				if agent.optimize_fuel:
 					new_fuel = agent.fuel if graph.fuel[next[0]][next[1]] > 0 else fuel - 1
 					new_time += graph.fuel[next[0]][next[1]]
-				else: new_fuel = 0
+				else: new_fuel = None
 
 				# Early goal test
 				if self._tag == EarlyTest:

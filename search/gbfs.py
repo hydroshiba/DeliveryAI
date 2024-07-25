@@ -16,3 +16,6 @@ class GBFS(Best):
 
 	def heuristic(self, graph, agent, cur):
 		return graph.manhattan(cur, agent.end)
+	
+	def compare(self, u, v):
+		return u._heuristic < v._heuristic

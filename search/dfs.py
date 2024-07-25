@@ -12,7 +12,11 @@ class DFS(Best):
 		super().__init__(best.EarlyTest)
 
 	def cost(self, graph, agent, cur, next):
-		return -1
+		return 1
 
 	def heuristic(self, graph, agent, cur):
 		return 0
+	
+	def compare(self, u, v):
+		if u._cost != v._cost: return u._cost > v._cost
+		return u._state < v._state

@@ -4,8 +4,9 @@
 #  with the lowest accumulated path cost, similar to Dijkstra's algorithm.
 #
 #  In this specific case which the graph is a grid, the cost moving from one
-#  node to another is always 1, so this implementation behaves exactly like
-#  BFS.
+#  node to another is always 1, so the comparator additionally accounts for
+#  the accumulated time (if the agent aims to optimize time) and fuel (if the
+#  agent aims to optimize fuel).
 # =============================================================================
 
 from . import best
@@ -20,3 +21,10 @@ class UCS(Best):
 
 	def heuristic(self, graph, agent, cur):
 		return 0
+	
+	def compare(self, u, v):
+		if u._cost != v._cost: return u._cost < v._cost
+		if u._time != None and u._time != v._time: return u._time < v._time
+		if u._fuel != None and u._fuel != v._fuel: return u._fuel > v._fuel
+
+		return u._state < v._state
