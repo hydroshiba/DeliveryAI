@@ -8,7 +8,7 @@ from search import GBFS
 from search import AStar
 
 graph, agents = Reader.read('testcase/input.txt')
-agent = Agent(agents[0].start, agents[0].end, 20)
+agent = Agent(agents[0].start, agents[0].end, agents[0].time)
 
 print('Agent: ', agent.start, agent.end)
 print('Optimize time: ', 'Yes' if agent.optimize_time else 'No')

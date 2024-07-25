@@ -1,6 +1,22 @@
 import tkinter as tk
 from tkinter import filedialog
 
+from core import Reader
+from core import Agent
+
+from search import BFS
+from search import DFS
+from search import UCS
+from search import GBFS
+from search import AStar
+
+graph = None
+agents = None
+agent = None
+expanded = []
+path = []
+file_path = None
+
 # Initialize variables to track the current step
 current_step = 0
 highlighted_cells = []
@@ -8,11 +24,64 @@ global_m = 0
 global_n = 0
 text_items = {}  # Dictionary to store text items
 
+def reset_state():
+    global current_step
+    global highlighted_cells
+    global text_items
+    global path
+    global expanded
+    
+    current_step = 0
+    highlighted_cells = []
+    text_items.clear()
+    path = []
+    expanded = []
+    canvas.delete("all")
+
+def on_algo_change(*args):
+    global graph, agents, agent
+    global expanded, path, file_path
+
+    reset_state()
+    load_map(file_path)
+
+    selected_algo = algo_var.get()
+    
+    if selected_algo == "BFS":
+        search = BFS()
+    elif selected_algo == "DFS":
+        search = DFS()
+    elif selected_algo == "UCS":
+        search = UCS()
+    elif selected_algo == "GBFS":
+        search = GBFS()
+    elif selected_algo == "A*":
+        search = AStar()
+
+    search.run(graph, agent)
+    path = search.path
+    expanded = search.expanded
+
+
 def browse_file():
+    global graph, agents, agent
+    global path, expanded
+    global file_path
+    
     file_path = filedialog.askopenfilename()
     input_file_entry.delete(0, tk.END)
     input_file_entry.insert(0, file_path)
+    reset_state()  # Reset state before loading the new map
     load_map(file_path)
+
+    graph, agents = Reader.read(file_path)
+    level = level_var.get()
+    if level == '1': 
+        agent = Agent(agents[0].start, agents[0].end)
+        on_algo_change()
+    elif level == '2':
+        agent = Agent(agents[0].start, agents[0].end, agents[0].time)
+
 
 def load_map(file_path):
     global global_m, global_n
@@ -72,25 +141,43 @@ def load_map(file_path):
     canvas.config(scrollregion=canvas.bbox("all"))
 
 def on_level_change(*args):
+    global graph, agents, agent, file_path
+
+    reset_state()
+    load_map(file_path)
+
     selected_level = level_var.get()
     if selected_level == "1":
         algo_frame.grid(row=1, column=3, padx=10, pady=10, sticky='w')
     else:
         algo_frame.grid_remove()
 
+    if selected_level == '1': 
+        agent = Agent(agents[0].start, agents[0].end)
+        on_algo_change()
+    elif selected_level == '2': 
+        agent = Agent(agents[0].start, agents[0].end, agents[0].time)
+    
+
 def highlight_next_step():
     global current_step
     global highlighted_cells
 
-    if current_step < len(expanded) + len(path):
-        if current_step % 2 == 0 and current_step // 2 < len(expanded):
-            cell = expanded[current_step // 2]
+    total_steps = len(expanded) + len(path)
+    expanded_steps = len(expanded)
+
+    if current_step < total_steps:
+        if current_step < expanded_steps:
+            cell = expanded[current_step]
             highlight_cell(cell, 'yellow')
             highlighted_cells.append((cell, 'yellow', text_items[cell][2]))
-        elif current_step % 2 == 1 and current_step // 2 < len(path):
-            cell = path[current_step // 2]
-            highlight_cell(cell, 'green')
-            highlighted_cells.append((cell, 'green', 'yellow'))
+        else:
+            path_step = current_step - expanded_steps
+            if path_step < len(path):
+                cell = path[path_step]
+                previous_color = 'yellow' if (cell, 'yellow', text_items[cell][2]) in highlighted_cells else text_items[cell][2]
+                highlight_cell(cell, 'green')
+                highlighted_cells.append((cell, 'green', previous_color))
         current_step += 1
 
 def highlight_previous_step():
@@ -99,24 +186,14 @@ def highlight_previous_step():
 
     if current_step > 0:
         current_step -= 1
-        cell, _, previous_color = highlighted_cells.pop()
-        restore_original_color(cell, previous_color)
+        cell, current_color, previous_color = highlighted_cells.pop()
+        highlight_cell(cell, previous_color)
 
 def highlight_cell(cell, color):
-    global global_m, global_n, text_items
-    i, j = cell
-    rect, text_id, _ = text_items[(i, j)]
-    canvas.itemconfig(rect, fill=color)
-    
-def restore_original_color(cell, original_color):
     global text_items
     i, j = cell
     rect, text_id, _ = text_items[(i, j)]
-    canvas.itemconfig(rect, fill=original_color)
-
-# Sample data for path and expanded
-path = [(1,2), (1,3), (1,4), (1,5), (2,5), (3,5), (4,5), (5,5), (6,5), (7,5), (7,6), (7,7), (7,8)]
-expanded = [(1,2), (1,3), (1,4), (1,5), (2,5), (3,5), (4,5), (5,5), (6,5), (7,5), (7,6), (7,7), (7,8)]
+    canvas.itemconfig(rect, fill=color)
 
 # Initialize the main window
 root = tk.Tk()
@@ -145,10 +222,10 @@ level_label.grid(row=1, column=0, padx=10, pady=10, sticky='e')
 
 level_var = tk.StringVar(root)
 level_var.set("1")  # default value
-level_options = ["1", "2", "3", "4"]
+level_options = ["1",  "2", "3", "4"]
 level_menu = tk.OptionMenu(root, level_var, *level_options)
 level_menu.grid(row=1, column=1, padx=10, pady=10, sticky='w')
-level_var.trace("w", on_level_change)
+level_var.trace_add("write", on_level_change)
 
 # Algorithm Selection Frame
 algo_frame = tk.Frame(root)
@@ -161,6 +238,7 @@ algo_options = ["BFS", "DFS", "UCS", "GBFS", "A*"]
 algo_menu = tk.OptionMenu(algo_frame, algo_var, *algo_options)
 algo_menu.pack(side="left", padx=10, pady=10)
 algo_frame.grid(row=1, column=3, padx=10, pady=10, sticky='w')
+algo_var.trace_add("write", on_algo_change)
 
 # Canvas for Displaying Map
 canvas_frame = tk.Frame(root)
