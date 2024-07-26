@@ -5,7 +5,7 @@
 # =============================================================================
 
 from . import best
-from search.best import Best
+from . import Best
 
 class AStar(Best):
 	def __init__(self):
@@ -22,7 +22,4 @@ class AStar(Best):
 		v_sum = v._cost + v._heuristic
 
 		if u_sum != v_sum: return u_sum < v_sum
-		if u._time != None and u._time != v._time: return u._time < v._time
-		if u._fuel != None and u._fuel != v._fuel: return u._fuel > v._fuel
-
 		return u._state < v._state

@@ -4,11 +4,11 @@ from tkinter import filedialog
 from core import Reader
 from core import Agent
 
-from search import BFS
-from search import DFS
-from search import UCS
-from search import GBFS
-from search import AStar
+from level.basic import BFS
+from level.basic import DFS
+from level.basic import UCS
+from level.basic import GBFS
+from level.basic import AStar
 
 graph = None
 agents = None

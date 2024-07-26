@@ -6,7 +6,7 @@
 from abc import ABC, abstractmethod
 
 class Search(ABC):
-	def __init__(self, tag):
+	def __init__(self):
 		self._path = []
 		self._expanded = []
 

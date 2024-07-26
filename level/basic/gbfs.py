@@ -1,22 +1,21 @@
-# dfs.py
+# gbfs.py
 # =============================================================================
-#  The Depth-first search algorithm, a search algorithm that explores nodes
-#  in depth first manner before moving on to the next branch.
+#  The Greedy Best-first search algorithm, a search algorithm that explores
+#  nodes with the lowest heuristic value first.
 # =============================================================================
 
 from . import best
-from search.best import Best
+from . import Best
 
-class DFS(Best):
+class GBFS(Best):
 	def __init__(self):
 		super().__init__(best.EarlyTest)
 
 	def cost(self, graph, agent, cur, next):
-		return 1
+		return 0
 
 	def heuristic(self, graph, agent, cur):
-		return 0
+		return graph.manhattan(cur, agent.end)
 	
 	def compare(self, u, v):
-		if u._cost != v._cost: return u._cost > v._cost
-		return u._state < v._state
+		return u._heuristic < v._heuristic

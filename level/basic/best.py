@@ -5,11 +5,8 @@
 # =============================================================================
 
 from abc import ABC, abstractmethod
-from queue import PriorityQueue
-
-from core import Node
 from core import Heap
-from search import Search
+from core import Search
 
 # Goal test tags
 class EarlyTest: pass
@@ -17,8 +14,16 @@ class LateTest: pass
 
 class Best(Search, ABC):
 	def __init__(self, tag):
+		super().__init__()
 		self._tag = tag
 		pass
+
+	class Node:
+		def __init__(self, state, parent, cost, heuristic):
+			self._state = state
+			self._parent = parent
+			self._cost = cost
+			self._heuristic = heuristic
 
 	@abstractmethod
 	def cost(self, graph, agent, cur, next):
@@ -29,31 +34,21 @@ class Best(Search, ABC):
 		pass
 
 	@abstractmethod
-	def compare(self, u, v):
+	def compare(self, u: Node, v: Node):
 		pass
 
 	def run(self, graph, agent):
-		frontier = Heap(self.compare)
 		visited = set()
 		predecessor = dict()
 		self._expanded = []
 
-		frontier.put(Node(
-			agent.start,
-			None,
-			0,
-			0,
-			0 if agent.optimize_time else None,
-			0 if agent.optimize_fuel else None
-		))
+		frontier = Heap(self.compare)
+		frontier.put(self.Node(agent.start, None, 0, 0))
 
 		while not frontier.empty():
 			node = frontier.get()
-			cur, parent, cost, time, fuel = node._state, node._parent, node._cost, node._time, node._fuel
-			
+			cur, parent, cost = node._state, node._parent, node._cost
 			if cur in visited: continue
-			if agent.optimize_time and time > agent.time: continue
-			if agent.optimize_fuel and fuel < 0: continue
 
 			visited.add(cur)
 			self._expanded.append(cur)
@@ -65,34 +60,20 @@ class Best(Search, ABC):
 				return
 			
 			directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-			for dx, dy in directions:
-				next = (cur[0] + dx, cur[1] + dy)
+
+			for dir in directions:
+				next = (cur[0] + dir[0], cur[1] + dir[1])
 
 				if next in visited: continue
 				if not (0 <= next[0] < graph.height and 0 <= next[1] < graph.width): continue
 				if graph.toll[next[0]][next[1]] == -1: continue
 
+				# Early goal test
+				if self._tag == EarlyTest and next == agent.end:
+					predecessor[next] = cur
+					self.trace(predecessor, agent.start, agent.end)
+					return
+				
 				new_cost = cost + self.cost(graph, agent, cur, next)
 				new_heuristic = self.heuristic(graph, agent, next)
-
-				# Optimize time
-				if agent.optimize_time:
-					new_time = time + graph.toll[next[0]][next[1]] + self.cost(graph, agent, cur, next)
-				else: new_time = None
-
-				# Optimize fuel
-				if agent.optimize_fuel:
-					new_fuel = agent.fuel if graph.fuel[next[0]][next[1]] > 0 else fuel - 1
-					new_time += graph.fuel[next[0]][next[1]]
-				else: new_fuel = None
-
-				# Early goal test
-				if self._tag == EarlyTest:
-					if agent.optimize_time and new_time > agent.time: continue
-					if agent.optimize_fuel and new_fuel < 0: continue
-					if next == agent.end:
-						predecessor[next] = cur
-						self.trace(predecessor, agent.start, agent.end)
-						return
-
-				frontier.put(Node(next, cur, new_cost, new_heuristic, new_time, new_fuel))
+				frontier.put(self.Node(next, cur, new_cost, new_heuristic))
