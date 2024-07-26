@@ -1,60 +1,61 @@
-# best.py
+# time.py
 # =============================================================================
-#  The Best-first search algorithm, a general framework for specific searching
-#  strageties. Search strategies are implemented by inheriting this class.
+#  A modified A* search algorithm to find the shortest path while considering
+#  the time constraint.
 # =============================================================================
 
-from abc import ABC, abstractmethod
 from core import Heap
 from core import Search
 
-# Goal test tags
-class EarlyTest: pass
-class LateTest: pass
-
-class Best(Search, ABC):
-	def __init__(self, tag):
+class TimeSearch(Search):
+	def __init__(self):
 		super().__init__()
-		self._tag = tag
 
 	class Node:
-		def __init__(self, state, parent, cost, heuristic):
+		def __init__(self, state, parent, cost, heuristic, time):
 			self._state = state
 			self._parent = parent
 			self._cost = cost
 			self._heuristic = heuristic
+			self._time = time
 
-	@abstractmethod
 	def cost(self, graph, agent, cur, next):
-		pass
+		return 1
 
-	@abstractmethod
 	def heuristic(self, graph, agent, cur):
-		pass
+		return graph.manhattan(cur, agent.end)
 
-	@abstractmethod
 	def compare(self, u: Node, v: Node):
-		pass
+		u_sum = u._cost + u._heuristic
+		v_sum = v._cost + v._heuristic
+
+		if u_sum != v_sum: return u_sum < v_sum
+		if u._time != None and u._time != v._time: return u._time < v._time
+		return u._state < v._state
 
 	def run(self, graph, agent):
+		if(not agent.optimize_time): raise ValueError('Agent does not have time constraint.')
+
 		visited = set()
 		predecessor = dict()
 		self._expanded = []
 
 		frontier = Heap(self.compare)
-		frontier.put(self.Node(agent.start, None, 0, 0))
+		frontier.put(self.Node(agent.start, None, 0, 0, 0))
 
 		while not frontier.empty():
 			node = frontier.get()
-			cur, parent, cost = node._state, node._parent, node._cost
+			cur, parent, cost, time = node._state, node._parent, node._cost, node._time
+
 			if cur in visited: continue
+			if time > agent.time: continue
 
 			visited.add(cur)
 			self._expanded.append(cur)
 			if predecessor.get(cur) is None: predecessor[cur] = parent
 
 			# Late goal test
-			if self._tag == LateTest and cur == agent.end:
+			if cur == agent.end:
 				self.trace(predecessor, agent.start, agent.end)
 				return
 			
@@ -66,13 +67,9 @@ class Best(Search, ABC):
 				if next in visited: continue
 				if not (0 <= next[0] < graph.height and 0 <= next[1] < graph.width): continue
 				if graph.toll[next[0]][next[1]] == -1: continue
-
-				# Early goal test
-				if self._tag == EarlyTest and next == agent.end:
-					predecessor[next] = cur
-					self.trace(predecessor, agent.start, agent.end)
-					return
 				
 				new_cost = cost + self.cost(graph, agent, cur, next)
 				new_heuristic = self.heuristic(graph, agent, next)
-				frontier.put(self.Node(next, cur, new_cost, new_heuristic))
+				new_time = time + max(graph.toll[next[0]][next[1]], 1)
+
+				frontier.put(self.Node(next, cur, new_cost, new_heuristic, new_time))
