@@ -190,12 +190,14 @@ def highlight_next_step():
     global current_step
     global highlighted_cells
     global time_var
+    global running
 
     total_steps = len(expanded) + len(path)
     expanded_steps = len(expanded)
 
     if len(path) == 0:
         messagebox.showinfo("Thông báo", "Không có đường đi")
+        running = False
         return
 
     if current_step < total_steps:
@@ -222,9 +224,11 @@ def highlight_next_step():
 def highlight_previous_step():
     global current_step
     global highlighted_cells
+    global running
 
     if len(path) == 0:
         messagebox.showinfo("Thông báo", "Không có đường đi")
+        running = False
         return
 
     if current_step > 0:
@@ -329,19 +333,21 @@ fuel_entry = tk.Entry(info_frame, textvariable=fuel_var, width=10)
 fuel_entry.pack(side="left", padx=10)
 
 # Control Buttons
-control_frame = tk.Frame(root, bg=bg_color)
-control_frame.grid(row=5, column=0, columnspan=4, padx=10, pady=10, sticky='ew')
+button_frame = tk.Frame(root, bg=bg_color)
+button_frame.grid(row=4, column=3, padx=10, pady=10, sticky='e')
 
-run_button = tk.Button(control_frame, text="Run", command=start_running)
-run_button.pack(side="left")
+run_button = tk.Button(button_frame, text="Run", command=start_running, bg=highlight_color, fg=fg_color)
+run_button.grid(row=0, column=0, padx=5, pady=5)
 
-pause_button = tk.Button(control_frame, text="Pause", command=stop_running)
-pause_button.pack(side="left")
+pause_button = tk.Button(button_frame, text="Pause", command=stop_running, bg=highlight_color, fg=fg_color)
+pause_button.grid(row=0, column=1, padx=5, pady=5)
 
-previous_button = tk.Button(control_frame, text="Previous Step", command=highlight_previous_step)
-previous_button.pack(side="left")
+# Previous and Next Step Buttons
+previous_step_button = tk.Button(button_frame, text="Previous Step", command=highlight_previous_step, bg=highlight_color, fg=fg_color)
+previous_step_button.grid(row=1, column=0, padx=5, pady=5)
 
-next_button = tk.Button(control_frame, text="Next Step", command=highlight_next_step)
-next_button.pack(side="left")
+next_step_button = tk.Button(button_frame, text="Next Step", command=highlight_next_step, bg=highlight_color, fg=fg_color)
+next_step_button.grid(row=1, column=1, padx=5, pady=5)
+
 
 root.mainloop()
