@@ -30,10 +30,10 @@ class Reader:
 					if element.startswith('G'):
 						coordinates[int(element[1:]) if len(element) > 1 else 0].append((i, j))
 
-			for element in coordinates:
+			for key in sorted(coordinates.keys()):
 				agents.append(Agent(
-					coordinates[element][0],
-					coordinates[element][1],
+					coordinates[key][0],
+					coordinates[key][1],
 					time,
 					fuel
 				))
