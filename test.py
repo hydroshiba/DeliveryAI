@@ -92,6 +92,7 @@ def browse_file():
         search.run(graph, agent)
         path = search.path
         expanded = search.expanded
+        time_var.set(agent.time)
 
 def load_map(file_path):
     global global_m, global_n
@@ -183,10 +184,12 @@ def on_level_change(*args):
         search.run(graph, agent)
         path = search.path
         expanded = search.expanded
+        time_var.set(agent.time)
 
 def highlight_next_step():
     global current_step
     global highlighted_cells
+    global time_var
 
     total_steps = len(expanded) + len(path)
     expanded_steps = len(expanded)
@@ -207,7 +210,14 @@ def highlight_next_step():
                 previous_color = 'yellow' if (cell, 'yellow', text_items[cell][2]) in highlighted_cells else text_items[cell][2]
                 highlight_cell(cell, 'green')
                 highlighted_cells.append((cell, 'green', previous_color))
+                if path_step > 0:  # Do not subtract time for the first step
+                    time_var.set(time_var.get() - 1)
+                    if text_items[cell][1] is not None:
+                        cell_value = canvas.itemcget(text_items[cell][1], 'text')
+                        if cell_value.isdigit():
+                            time_var.set(time_var.get() - int(cell_value))
         current_step += 1
+        time_entry.update_idletasks()
 
 def highlight_previous_step():
     global current_step
@@ -266,78 +276,72 @@ input_file_frame.grid(row=0, column=0, columnspan=4, padx=10, pady=10, sticky='e
 input_file_label = tk.Label(input_file_frame, text="Input File", bg=bg_color, fg=fg_color)
 input_file_label.pack(side="left")
 
-input_file_entry = tk.Entry(input_file_frame, width=50, bg=highlight_color, fg=fg_color)
-input_file_entry.pack(side="left", padx=(5, 10), fill='x', expand=True)
+input_file_entry = tk.Entry(input_file_frame, width=80)
+input_file_entry.pack(side="left", padx=10)
 
-browse_button = tk.Button(input_file_frame, text="Browse", command=browse_file, bg=highlight_color, fg=fg_color)
+browse_button = tk.Button(input_file_frame, text="Browse", command=browse_file)
 browse_button.pack(side="left")
 
-# Level Selection
-level_label = tk.Label(root, text="Level:", bg=bg_color, fg=fg_color)
-level_label.grid(row=1, column=0, padx=10, pady=10, sticky='e')
+# Level Section
+level_frame = tk.Frame(root, bg=bg_color)
+level_frame.grid(row=1, column=0, padx=10, pady=10, sticky='w')
 
-level_var = tk.StringVar(root)
-level_var.set("1")  # default value
-level_options = ["1", "2", "3", "4"]
-level_menu = tk.OptionMenu(root, level_var, *level_options)
-level_menu.config(bg=highlight_color, fg=fg_color)
-level_menu.grid(row=1, column=1, padx=10, pady=10, sticky='w')
+level_label = tk.Label(level_frame, text="Level:", bg=bg_color, fg=fg_color)
+level_label.pack(side="left")
+
+level_var = tk.StringVar(value="1")
+level_dropdown = tk.OptionMenu(level_frame, level_var, "1", "2", "3", "4")
+level_dropdown.pack(side="left")
 level_var.trace_add("write", on_level_change)
 
-# Algorithm Selection Frame
+# Algorithm Selection Section
 algo_frame = tk.Frame(root, bg=bg_color)
+algo_frame.grid(row=1, column=3, padx=10, pady=10, sticky='w')
+
 algo_label = tk.Label(algo_frame, text="Thuật toán tìm kiếm:", bg=bg_color, fg=fg_color)
 algo_label.pack(side="left")
 
-algo_var = tk.StringVar(algo_frame)
-algo_var.set("BFS")  # default value
-algo_options = ["BFS", "DFS", "UCS", "GBFS", "A*"]
-algo_menu = tk.OptionMenu(algo_frame, algo_var, *algo_options)
-algo_menu.config(bg=highlight_color, fg=fg_color)
-algo_menu.pack(side="left", padx=10, pady=10)
-algo_frame.grid(row=1, column=3, padx=10, pady=10, sticky='w')
-algo_var.trace_add("write", on_algo_change)
+algo_var = tk.StringVar(value="BFS")
+algo_dropdown = tk.OptionMenu(algo_frame, algo_var, "BFS", "DFS", "UCS", "GBFS", "A*")
+algo_dropdown.pack(side="left")
+algo_var.trace("w", on_algo_change)
 
-# Canvas for Displaying Map
-canvas_frame = tk.Frame(root, bg=bg_color)
-canvas_frame.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky='nsew')
+# Canvas for visualization
+canvas = tk.Canvas(root, bg='light gray', width=600, height=400)
+canvas.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky='nsew')
 
-canvas = tk.Canvas(canvas_frame, width=600, height=400, bg='light gray')
-canvas.pack(expand=True, fill='both')
+# Time and Fuel Information
+info_frame = tk.Frame(root, bg=bg_color)
+info_frame.grid(row=4, column=0, columnspan=4, padx=10, pady=10, sticky='ew')
 
-# Time and Fuel Section
-time_fuel_frame = tk.Frame(root, bg=bg_color)
-time_fuel_frame.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky='w')
-
-time_label = tk.Label(time_fuel_frame, text="Time:", bg=bg_color, fg=fg_color)
+time_label = tk.Label(info_frame, text="Time:", bg=bg_color, fg=fg_color)
 time_label.pack(side="left")
 
-time_entry = tk.Entry(time_fuel_frame, width=10, bg=highlight_color, fg=fg_color)
-time_entry.pack(side="left", padx=(0, 10))
+time_var = tk.IntVar(value=0)
+time_entry = tk.Entry(info_frame, textvariable=time_var, width=10)
+time_entry.pack(side="left", padx=10)
 
-fuel_label = tk.Label(time_fuel_frame, text="Fuel:", bg=bg_color, fg=fg_color)
+fuel_label = tk.Label(info_frame, text="Fuel:", bg=bg_color, fg=fg_color)
 fuel_label.pack(side="left")
 
-fuel_entry = tk.Entry(time_fuel_frame, width=10, bg=highlight_color, fg=fg_color)
-fuel_entry.pack(side="left", padx=(0, 10))
+fuel_var = tk.IntVar(value=0)
+fuel_entry = tk.Entry(info_frame, textvariable=fuel_var, width=10)
+fuel_entry.pack(side="left", padx=10)
 
-# Button Frame
-button_frame = tk.Frame(root, bg=bg_color)
-button_frame.grid(row=5, column=3, padx=10, pady=10, sticky='e')
+# Control Buttons
+control_frame = tk.Frame(root, bg=bg_color)
+control_frame.grid(row=5, column=0, columnspan=4, padx=10, pady=10, sticky='ew')
 
-# Run and Pause Buttons
-run_button = tk.Button(button_frame, text="Run", command=start_running, bg=highlight_color, fg=fg_color)
-run_button.grid(row=0, column=0, padx=5, pady=5)
+run_button = tk.Button(control_frame, text="Run", command=start_running)
+run_button.pack(side="left")
 
-pause_button = tk.Button(button_frame, text="Pause", command=stop_running, bg=highlight_color, fg=fg_color)
-pause_button.grid(row=0, column=1, padx=5, pady=5)
+pause_button = tk.Button(control_frame, text="Pause", command=stop_running)
+pause_button.pack(side="left")
 
-# Previous and Next Step Buttons
-previous_step_button = tk.Button(button_frame, text="Previous Step", command=highlight_previous_step, bg=highlight_color, fg=fg_color)
-previous_step_button.grid(row=1, column=0, padx=5, pady=5)
+previous_button = tk.Button(control_frame, text="Previous Step", command=highlight_previous_step)
+previous_button.pack(side="left")
 
-next_step_button = tk.Button(button_frame, text="Next Step", command=highlight_next_step, bg=highlight_color, fg=fg_color)
-next_step_button.grid(row=1, column=1, padx=5, pady=5)
+next_button = tk.Button(control_frame, text="Next Step", command=highlight_next_step)
+next_button.pack(side="left")
 
-# Run the application
 root.mainloop()
