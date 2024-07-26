@@ -28,7 +28,7 @@ text_items = {}  # Dictionary to store text items
 
 # Initialize variables for automatic stepping
 running = False
-step_delay = 200  # Delay in milliseconds
+step_delay = 100  # Delay in milliseconds
 
 def reset_state():
     global current_step
@@ -250,6 +250,7 @@ def run_steps():
 
 def start_running():
     global running
+    on_algo_change()
     running = True
     run_steps()
 
@@ -260,24 +261,18 @@ def stop_running():
 # Initialize the main window
 root = tk.Tk()
 root.title("Delivery Path Finder")
-
-# Set theme light colors
-bg_color = "#ffffff"  # white background
-fg_color = "#000000"  # black foreground
-highlight_color = "#e0e0e0"  # light gray highlight
-
 # Set the main window background color
-root.configure(bg=bg_color)
+root.configure(bg='')
 
 # Configure the grid layout
 root.columnconfigure(1, weight=1)
 root.rowconfigure(3, weight=1)
 
 # Input File Section
-input_file_frame = tk.Frame(root, bg=bg_color)
+input_file_frame = tk.Frame(root)
 input_file_frame.grid(row=0, column=0, columnspan=4, padx=10, pady=10, sticky='ew')
 
-input_file_label = tk.Label(input_file_frame, text="Input File", bg=bg_color, fg=fg_color)
+input_file_label = tk.Label(input_file_frame, text="Input File")
 input_file_label.pack(side="left")
 
 input_file_entry = tk.Entry(input_file_frame, width=80)
@@ -287,10 +282,10 @@ browse_button = tk.Button(input_file_frame, text="Browse", command=browse_file)
 browse_button.pack(side="left")
 
 # Level Section
-level_frame = tk.Frame(root, bg=bg_color)
+level_frame = tk.Frame(root)
 level_frame.grid(row=1, column=0, padx=10, pady=10, sticky='w')
 
-level_label = tk.Label(level_frame, text="Level:", bg=bg_color, fg=fg_color)
+level_label = tk.Label(level_frame, text="Level:")
 level_label.pack(side="left")
 
 level_var = tk.StringVar(value="1")
@@ -299,10 +294,10 @@ level_dropdown.pack(side="left")
 level_var.trace_add("write", on_level_change)
 
 # Algorithm Selection Section
-algo_frame = tk.Frame(root, bg=bg_color)
+algo_frame = tk.Frame(root)
 algo_frame.grid(row=1, column=3, padx=10, pady=10, sticky='w')
 
-algo_label = tk.Label(algo_frame, text="Thuật toán tìm kiếm:", bg=bg_color, fg=fg_color)
+algo_label = tk.Label(algo_frame, text="Thuật toán tìm kiếm:")
 algo_label.pack(side="left")
 
 algo_var = tk.StringVar(value="BFS")
@@ -315,17 +310,17 @@ canvas = tk.Canvas(root, bg='light gray', width=600, height=400)
 canvas.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky='nsew')
 
 # Time and Fuel Information
-info_frame = tk.Frame(root, bg=bg_color)
+info_frame = tk.Frame(root)
 info_frame.grid(row=4, column=0, columnspan=4, padx=10, pady=10, sticky='ew')
 
-time_label = tk.Label(info_frame, text="Time:", bg=bg_color, fg=fg_color)
+time_label = tk.Label(info_frame, text="Time:")
 time_label.pack(side="left")
 
 time_var = tk.IntVar(value=0)
 time_entry = tk.Entry(info_frame, textvariable=time_var, width=10)
 time_entry.pack(side="left", padx=10)
 
-fuel_label = tk.Label(info_frame, text="Fuel:", bg=bg_color, fg=fg_color)
+fuel_label = tk.Label(info_frame, text="Fuel:")
 fuel_label.pack(side="left")
 
 fuel_var = tk.IntVar(value=0)
@@ -333,20 +328,20 @@ fuel_entry = tk.Entry(info_frame, textvariable=fuel_var, width=10)
 fuel_entry.pack(side="left", padx=10)
 
 # Control Buttons
-button_frame = tk.Frame(root, bg=bg_color)
+button_frame = tk.Frame(root)
 button_frame.grid(row=4, column=3, padx=10, pady=10, sticky='e')
 
-run_button = tk.Button(button_frame, text="Run", command=start_running, bg=highlight_color, fg=fg_color)
+run_button = tk.Button(button_frame, text="Run", command=start_running)
 run_button.grid(row=0, column=0, padx=5, pady=5)
 
-pause_button = tk.Button(button_frame, text="Pause", command=stop_running, bg=highlight_color, fg=fg_color)
+pause_button = tk.Button(button_frame, text="Pause", command=stop_running)
 pause_button.grid(row=0, column=1, padx=5, pady=5)
 
 # Previous and Next Step Buttons
-previous_step_button = tk.Button(button_frame, text="Previous Step", command=highlight_previous_step, bg=highlight_color, fg=fg_color)
+previous_step_button = tk.Button(button_frame, text="Previous Step", command=highlight_previous_step)
 previous_step_button.grid(row=1, column=0, padx=5, pady=5)
 
-next_step_button = tk.Button(button_frame, text="Next Step", command=highlight_next_step, bg=highlight_color, fg=fg_color)
+next_step_button = tk.Button(button_frame, text="Next Step", command=highlight_next_step)
 next_step_button.grid(row=1, column=1, padx=5, pady=5)
 
 
