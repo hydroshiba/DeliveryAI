@@ -22,13 +22,11 @@ class Search(ABC):
 	def run(self, graph, agent):
 		pass
 
-	def trace(self, predecessor: dict, start: tuple, end: tuple):
+	def trace(self, predecessor: dict, end):
 		self._path = []
 
-		while end != start:
-			if predecessor.get(end) is None: return
+		while end != None:
 			self._path.append(end)
 			end = predecessor[end]
 
-		self._path.append(start)
 		self._path.reverse()

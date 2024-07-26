@@ -55,7 +55,7 @@ class Best(Search, ABC):
 
 			# Late goal test
 			if self._tag == LateTest and cur == agent.end:
-				self.trace(predecessor, agent.start, agent.end)
+				self.trace(predecessor, cur)
 				return
 			
 			directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
@@ -70,7 +70,7 @@ class Best(Search, ABC):
 				# Early goal test
 				if self._tag == EarlyTest and next == agent.end:
 					predecessor[next] = cur
-					self.trace(predecessor, agent.start, agent.end)
+					self.trace(predecessor, cur)
 					return
 				
 				new_cost = cost + self.cost(graph, agent, cur, next)

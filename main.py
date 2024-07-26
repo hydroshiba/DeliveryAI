@@ -8,6 +8,7 @@ from level.basic import GBFS
 from level.basic import AStar
 
 from level.constrained import TimeSearch
+from level.constrained import FuelSearch
 
 graph, agents = Reader.read('testcase/input.txt')
 agent = agents[0]
@@ -18,7 +19,7 @@ print('Optimize fuel: ', 'Yes' if agent.optimize_fuel else 'No', '\n')
 
 # =============================================================================
 
-search = TimeSearch()
+search = FuelSearch()
 print('Search: ', search)
 
 search.run(graph, agent)
