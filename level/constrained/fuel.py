@@ -11,9 +11,12 @@ class FuelSearch(Search):
 	def __init__(self):
 		super().__init__()
 
-	def augment_path(self):
+	def format_path(self):
 		for i in range(len(self._path)):
 			self._path[i] = self._path[i][0]
+		
+		for i in range(len(self._expanded)):
+			self._expanded[i] = self._expanded[i][0]
 
 	class Node:
 		def __init__(self, state, parent, cost, heuristic, time, fuel):
@@ -73,7 +76,7 @@ class FuelSearch(Search):
 			# Late goal test
 			if cur[0] == agent.end:
 				self.trace(predecessor, cur)
-				self.augment_path()
+				self.format_path()
 				return
 			
 			directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
