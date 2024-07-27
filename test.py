@@ -264,8 +264,12 @@ def run_steps():
         root.after(step_delay, run_steps)
 
 def start_running():
-    global running
+    global running, current_step
     if running: return
+
+    if current_step == len(expanded) + len(path):
+        on_level_change()
+
     running = True
     run_steps()
 
