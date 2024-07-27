@@ -265,6 +265,7 @@ def run_steps():
 
 def start_running():
     global running
+    if running: return
     running = True
     run_steps()
 
