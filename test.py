@@ -1,16 +1,14 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-
 from core import Reader
 from core import Agent
-
 from level.basic import BFS
 from level.basic import DFS
 from level.basic import UCS
 from level.basic import GBFS
 from level.basic import AStar
-
 from level.constrained import TimeSearch
+from level.constrained import FuelSearch
 
 graph = None
 agents = None
@@ -102,16 +100,16 @@ def load_map(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
 
-    # Đọc thông tin từ dòng đầu tiên
+    # Read information from the first line
     n, m, t, f = map(int, lines[0].split())
     global_m, global_n = m, n  # Store the dimensions globally
 
-    # Đọc các dòng tiếp theo vào bản đồ
+    # Read the following lines into the map
     map_data = [line.split() for line in lines[1:]]
 
     selected_level = level_var.get()
 
-    # Xử lý map_data theo level hiện tại
+    # Process map_data based on the current level
     if selected_level == "1":
         map_data = [[cell if cell in ['0', '-1', 'S', 'G'] else '0' for cell in row] for row in map_data]
     elif selected_level == "2":
@@ -119,9 +117,9 @@ def load_map(file_path):
     elif selected_level == "3":
         map_data = [[cell if cell not in ['S1', 'S2', 'G1', 'G2'] else '0' for cell in row] for row in map_data]
     elif selected_level == "4":
-        pass  # Không cần thay đổi gì
+        pass  # No need to change anything
 
-    # Vẽ bản đồ lên canvas
+    # Draw the map on the canvas
     canvas.delete("all")
     canvas.update_idletasks()
     canvas_width = canvas.winfo_width()
@@ -197,7 +195,7 @@ def highlight_next_step():
     expanded_steps = len(expanded)
 
     if len(path) == 0:
-        messagebox.showinfo("Thông báo", "Không có đường đi")
+        messagebox.showinfo("Notification", "Path not found")
         running = False
         return
 
@@ -242,7 +240,7 @@ def highlight_previous_step():
     global running
 
     if len(path) == 0:
-        messagebox.showinfo("Thông báo", "Không có đường đi")
+        messagebox.showinfo("Notification", "Path not found")
         running = False
         return
 
@@ -316,7 +314,7 @@ level_var.trace_add("write", on_level_change)
 algo_frame = tk.Frame(root)
 algo_frame.grid(row=1, column=3, padx=10, pady=10, sticky='w')
 
-algo_label = tk.Label(algo_frame, text="Thuật toán tìm kiếm:")
+algo_label = tk.Label(algo_frame, text="Searching algorithm:")
 algo_label.pack(side="left")
 
 algo_var = tk.StringVar(value="BFS")
