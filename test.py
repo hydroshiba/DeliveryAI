@@ -192,7 +192,8 @@ def highlight_next_step():
     global time_var
     global running
 
-    total_steps = len(expanded) + len(path)
+    cells = expanded + path
+    total_steps = len(cells)
     expanded_steps = len(expanded)
 
     if len(path) == 0:
@@ -200,26 +201,40 @@ def highlight_next_step():
         running = False
         return
 
-    if current_step < total_steps:
-        if current_step < expanded_steps:
-            cell = expanded[current_step]
-            highlight_cell(cell, 'yellow')
-            highlighted_cells.append((cell, 'yellow', text_items[cell][2]))
-        else:
-            path_step = current_step - expanded_steps
-            if path_step < len(path):
-                cell = path[path_step]
-                previous_color = 'yellow' if (cell, 'yellow', text_items[cell][2]) in highlighted_cells else text_items[cell][2]
-                highlight_cell(cell, 'green')
-                highlighted_cells.append((cell, 'green', previous_color))
-                if path_step > 0:  # Do not subtract time for the first step
-                    time_var.set(time_var.get() - 1)
-                    if text_items[cell][1] is not None:
-                        cell_value = canvas.itemcget(text_items[cell][1], 'text')
-                        if cell_value.isdigit():
-                            time_var.set(time_var.get() - int(cell_value))
-        current_step += 1
-        time_entry.update_idletasks()
+    if current_step == total_steps:
+        running = False
+        return
+    
+    cell = cells[current_step]
+
+    if current_step < expanded_steps:
+        if(len(highlighted_cells) > 0):
+            highlight_cell(highlighted_cells[-1][0], 'yellow')
+            highlighted_cells[-1] = (highlighted_cells[-1][0], 'yellow', highlighted_cells[-1][2])
+
+        highlight_cell(cell, 'blue')
+        highlighted_cells.append((cell, 'blue', text_items[cell][2]))
+    else:
+        # Remove blue for the final expanded cell
+        if current_step == expanded_steps:
+            highlight_cell(cells[expanded_steps - 1], 'yellow')
+            highlighted_cells[-1] = (highlighted_cells[-1][0], 'yellow', highlighted_cells[-1][2])
+
+        color = 'green' if cell == path[0] else 'red' if cell == path[-1] else 'blue'
+        previous_color = 'yellow' if (cell, 'yellow', text_items[cell][2]) in highlighted_cells else text_items[cell][2]
+        
+        highlight_cell(cell, color)
+        highlighted_cells.append((cell, color, previous_color))
+
+        if current_step > expanded_steps:  # Do not subtract time for the first step
+            time_var.set(time_var.get() - 1)
+            if text_items[cell][1] is not None:
+                cell_value = canvas.itemcget(text_items[cell][1], 'text')
+                if cell_value.isdigit():
+                    time_var.set(time_var.get() - int(cell_value))
+
+    current_step += 1
+    time_entry.update_idletasks()
 
 def highlight_previous_step():
     global current_step
@@ -240,7 +255,7 @@ def highlight_cell(cell, color):
     global text_items
     i, j = cell
     rect, text_id, _ = text_items[(i, j)]
-    canvas.itemconfig(rect, fill=color)
+    canvas.itemconfig(rect, fill = color)
 
 def run_steps():
     global running
@@ -250,7 +265,6 @@ def run_steps():
 
 def start_running():
     global running
-    on_algo_change()
     running = True
     run_steps()
 
