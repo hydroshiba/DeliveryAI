@@ -137,26 +137,22 @@ def load_map(file_path):
             x2, y2 = x1 + cell_size, y1 + cell_size
             
             if map_data[i][j] == '-1':
-                color = 'black'
-            elif map_data[i][j] == 'S':
-                color = 'green'
-            elif map_data[i][j] in ['G', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10']:
-                color = 'red'
-            elif map_data[i][j] in ['F', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10']:
-                color = 'orange'
-            elif map_data[i][j] in ['S', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10']:
-                color = 'light green'
-            elif map_data[i][j] == '0':
-                color = 'white'
-            elif map_data[i][j].isdigit():
-                color = 'light blue'
+                color = 'dark gray'
+            elif map_data[i][j][0] == 'S':
+                color = 'sea green'
+            elif map_data[i][j][0] == 'G':
+                color = 'firebrick'
+            elif map_data[i][j][0] == 'F':
+                color = 'salmon'
+            elif map_data[i][j].isdigit() and int(map_data[i][j]) > 0:
+                color = 'medium purple'
             else:
                 color = 'white'
                 
-            rect = canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline='gray', tags='cell')
+            rect = canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline='black', tags='cell')
             
             if map_data[i][j] not in ['0', '-1']:
-                text_id = canvas.create_text((x1 + x2) // 2, (y1 + y2) // 2, text=map_data[i][j])
+                text_id = canvas.create_text((x1 + x2) // 2, (y1 + y2) // 2, text=map_data[i][j], fill='white', font=('TkDefaultFont', cell_size // 2))
                 text_items[(i, j)] = (rect, text_id, color)
             else:
                 text_items[(i, j)] = (rect, None, color)
@@ -211,18 +207,18 @@ def highlight_next_step():
 
     if current_step < expanded_steps:
         if len(highlighted_cells) > 0:
-            highlight_cell(highlighted_cells[-1][0], 'yellow')
-            highlighted_cells[-1] = (highlighted_cells[-1][0], 'yellow', highlighted_cells[-1][2])
+            highlight_cell(highlighted_cells[-1][0], 'royal blue')
+            highlighted_cells[-1] = (highlighted_cells[-1][0], 'royal blue', highlighted_cells[-1][2])
 
-        highlight_cell(cell, 'blue')
-        highlighted_cells.append((cell, 'blue', text_items[cell][2]))
+        highlight_cell(cell, 'navy blue')
+        highlighted_cells.append((cell, 'navy blue', text_items[cell][2]))
     else:
         if current_step == expanded_steps:
-            highlight_cell(cells[expanded_steps - 1], 'yellow')
-            highlighted_cells[-1] = (highlighted_cells[-1][0], 'yellow', highlighted_cells[-1][2])
+            highlight_cell(cells[expanded_steps - 1], 'royal blue')
+            highlighted_cells[-1] = (highlighted_cells[-1][0], 'royal blue', highlighted_cells[-1][2])
 
-        color = 'green' if cell == path[0] else 'red' if cell == path[-1] else 'blue'
-        previous_color = 'yellow' if (cell, 'yellow', text_items[cell][2]) in highlighted_cells else text_items[cell][2]
+        color = 'sea green' if cell == path[0] else 'firebrick' if cell == path[-1] else 'navy blue'
+        previous_color = 'royal blue' if (cell, 'royal blue', text_items[cell][2]) in highlighted_cells else text_items[cell][2]
         
         highlight_cell(cell, color)
         highlighted_cells.append((cell, color, previous_color))
@@ -264,23 +260,23 @@ def highlight_previous_step():
 
         if current_step < len(expanded):
             if len(highlighted_cells) > 0:
-                highlight_cell(highlighted_cells[-1][0], 'blue')
+                highlight_cell(highlighted_cells[-1][0], 'navy blue')
         else:
             if current_step == len(expanded):
-                highlight_cell(expanded[-1], 'blue')
-                highlight_cell(path[0], 'green')
+                highlight_cell(expanded[-1], 'navy blue')
+                highlight_cell(path[0], 'sea green')
             elif current_step > len(expanded):
-                highlight_cell(path[0], 'green')
-                highlight_cell(path[-1], 'red')
+                highlight_cell(path[0], 'sea green')
+                highlight_cell(path[-1], 'firebrick')
 
         # Restore time, fuel, and cost variables
         if previous_time:
-            restored_time = previous_time.pop()
+            restofirebrick_time = previous_time.pop()
             if text_items[cell][1] is not None:
                 cell_value = canvas.itemcget(text_items[cell][1], 'text')
                 if cell_value.isdigit():
-                    restored_time -= int(cell_value)  # Restore cell value
-            time_var.set(restored_time - 1)  # Restore 1
+                    restofirebrick_time -= int(cell_value)  # Restore cell value
+            time_var.set(restofirebrick_time - 1)  # Restore 1
         if previous_fuel:
             fuel_var.set(previous_fuel.pop())
         if previous_cost:
