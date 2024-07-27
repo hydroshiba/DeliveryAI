@@ -18,6 +18,7 @@ path = []
 file_path = None
 previous_time = []
 previous_fuel = []
+previous_cost = []
 
 # Initialize variables to track the current step
 current_step = 0
@@ -31,7 +32,7 @@ running = False
 step_delay = 100  # Delay in milliseconds
 
 def reset_state():
-    global current_step, highlighted_cells, text_items, path, expanded, running, previous_time, previous_fuel
+    global current_step, highlighted_cells, text_items, path, expanded, running, previous_time, previous_fuel, previous_cost
     
     current_step = 0
     highlighted_cells = []
@@ -42,11 +43,11 @@ def reset_state():
     running = False
     previous_time = []
     previous_fuel = []
+    previous_cost = []
 
 
 def on_algo_change(*args):
-    global graph, agents, agent
-    global expanded, path, file_path
+    global graph, agents, agent, expanded, path, file_path
 
     reset_state()
     load_map(file_path)
@@ -69,9 +70,7 @@ def on_algo_change(*args):
     expanded = search.expanded
 
 def browse_file():
-    global graph, agents, agent
-    global path, expanded
-    global file_path
+    global graph, agents, agent, path, expanded, file_path
     
     file_path = filedialog.askopenfilename()
     input_file_entry.delete(0, tk.END)
@@ -91,6 +90,9 @@ def browse_file():
         path = search.path
         expanded = search.expanded
         time_var.set(agent.time)
+        fuel_var.set(agent.fuel)
+        time_limit_var.set(agent.time_limit)
+        fuel_limit_var.set(agent.fuel_limit)
 
 def load_map(file_path):
     global global_m, global_n
@@ -182,16 +184,13 @@ def on_level_change(*args):
         search.run(graph, agent)
         path = search.path
         expanded = search.expanded
-        time_var.set(agent.time)
+        time_var.set(0)
+        fuel_var.set(agent.fuel)
+        time_limit_var.set(agent.time)
+        fuel_limit_var.set(agent.fuel)
 
 def highlight_next_step():
-    global current_step
-    global highlighted_cells
-    global time_var
-    global fuel_var
-    global running
-    global previous_time
-    global previous_fuel
+    global current_step, highlighted_cells, time_var, fuel_var, path_cost_var, running, previous_time, previous_fuel, previous_cost
 
     selected_level = level_var.get()
 
@@ -231,26 +230,27 @@ def highlight_next_step():
         if selected_level != "1" and current_step >= expanded_steps and current_step > expanded_steps:
             previous_time.append(time_var.get())  # Save current time
             previous_fuel.append(fuel_var.get())  # Save current fuel (if fuel_var is defined)
-            new_time = time_var.get() - 1
+            previous_cost.append(path_cost_var.get())  # Save current path cost
+            new_time = time_var.get() + 1
+            new_cost = path_cost_var.get() + 1
             if text_items[cell][1] is not None:
                 cell_value = canvas.itemcget(text_items[cell][1], 'text')
                 if cell_value.isdigit():
-                    new_time -= int(cell_value)
+                    new_time += int(cell_value)
             time_var.set(new_time)
+            path_cost_var.set(new_cost)
             previous_time[-1] = new_time  # Save the updated time after reducing
             previous_fuel[-1] = fuel_var.get()
+            previous_cost[-1] = new_cost
 
     current_step += 1
     time_entry.update_idletasks()
     fuel_entry.update_idletasks()
+    path_cost_entry.update_idletasks()
 
 
 def highlight_previous_step():
-    global current_step
-    global highlighted_cells
-    global running
-    global previous_time
-    global previous_fuel
+    global current_step, highlighted_cells, running, previous_time, previous_fuel, previous_cost
 
     if len(path) == 0:
         messagebox.showinfo("Notification", "Path not found")
@@ -273,20 +273,22 @@ def highlight_previous_step():
                 highlight_cell(path[0], 'green')
                 highlight_cell(path[-1], 'red')
 
-        # Restore time and fuel variables
+        # Restore time, fuel, and cost variables
         if previous_time:
             restored_time = previous_time.pop()
             if text_items[cell][1] is not None:
                 cell_value = canvas.itemcget(text_items[cell][1], 'text')
                 if cell_value.isdigit():
-                    restored_time += int(cell_value)  # Restore cell value
-            time_var.set(restored_time + 1)  # Restore 1
+                    restored_time -= int(cell_value)  # Restore cell value
+            time_var.set(restored_time - 1)  # Restore 1
         if previous_fuel:
             fuel_var.set(previous_fuel.pop())
+        if previous_cost:
+            path_cost_var.set(previous_cost.pop() - 1)
 
     time_entry.update_idletasks()
     fuel_entry.update_idletasks()
-
+    path_cost_entry.update_idletasks()
 
 
 def highlight_cell(cell, color):
@@ -366,23 +368,44 @@ algo_var.trace_add("write", on_algo_change)
 canvas = tk.Canvas(root, bg='light gray', width=600, height=400)
 canvas.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky='nsew')
 
-# Time and Fuel Information
+# Time, Fuel, and Path Cost Information
 info_frame = tk.Frame(root)
 info_frame.grid(row=4, column=0, columnspan=4, padx=10, pady=10, sticky='ew')
 
+time_limit_label = tk.Label(info_frame, text="Time Limit:")
+time_limit_label.grid(row=0, column=0, padx=10, pady=5, sticky='w')
+
+time_limit_var = tk.IntVar(value=0)
+time_limit_entry = tk.Entry(info_frame, textvariable=time_limit_var, width=10)
+time_limit_entry.grid(row=0, column=1, padx=10, pady=5, sticky='w')
+
+fuel_limit_label = tk.Label(info_frame, text="Fuel Limit:")
+fuel_limit_label.grid(row=0, column=2, padx=10, pady=5, sticky='w')
+
+fuel_limit_var = tk.IntVar(value=0)
+fuel_limit_entry = tk.Entry(info_frame, textvariable=fuel_limit_var, width=10)
+fuel_limit_entry.grid(row=0, column=3, padx=10, pady=5, sticky='w')
+
 time_label = tk.Label(info_frame, text="Time:")
-time_label.pack(side="left")
+time_label.grid(row=1, column=0, padx=10, pady=5, sticky='w')
 
 time_var = tk.IntVar(value=0)
 time_entry = tk.Entry(info_frame, textvariable=time_var, width=10)
-time_entry.pack(side="left", padx=10)
+time_entry.grid(row=1, column=1, padx=10, pady=5, sticky='w')
 
 fuel_label = tk.Label(info_frame, text="Fuel:")
-fuel_label.pack(side="left")
+fuel_label.grid(row=1, column=2, padx=10, pady=5, sticky='w')
 
 fuel_var = tk.IntVar(value=0)
 fuel_entry = tk.Entry(info_frame, textvariable=fuel_var, width=10)
-fuel_entry.pack(side="left", padx=10)
+fuel_entry.grid(row=1, column=3, padx=10, pady=5, sticky='w')
+
+path_cost_label = tk.Label(info_frame, text="Path Cost:")
+path_cost_label.grid(row=2, column=0, padx=10, pady=5, sticky='w')
+
+path_cost_var = tk.IntVar(value=0)
+path_cost_entry = tk.Entry(info_frame, textvariable=path_cost_var, width=10)
+path_cost_entry.grid(row=2, column=1, padx=10, pady=5, sticky='w')
 
 # Control Buttons
 button_frame = tk.Frame(root)
