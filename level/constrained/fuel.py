@@ -90,8 +90,9 @@ class FuelSearch(Search):
 				
 				new_cost = cost + self.cost(graph, agent, cur, next)
 				new_heuristic = self.heuristic(graph, agent, next)
+				
 				new_time = time + graph.toll[next[0]][next[1]] + graph.fuel[next[0]][next[1]] + 1
-				new_fuel = agent.fuel if bool(graph.fuel[next[0]][next[1]]) else fuel - 1
+				new_fuel = agent.fuel if bool(graph.fuel[next[0]][next[1]] and fuel) else fuel - 1
 
 				frontier.put(self.Node(
 					(next, new_fuel),
