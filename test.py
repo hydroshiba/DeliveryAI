@@ -16,6 +16,8 @@ agent = None
 expanded = []
 path = []
 file_path = None
+previous_time = []
+previous_fuel = []
 
 # Initialize variables to track the current step
 current_step = 0
@@ -29,12 +31,7 @@ running = False
 step_delay = 100  # Delay in milliseconds
 
 def reset_state():
-    global current_step
-    global highlighted_cells
-    global text_items
-    global path
-    global expanded
-    global running
+    global current_step, highlighted_cells, text_items, path, expanded, running, previous_time, previous_fuel
     
     current_step = 0
     highlighted_cells = []
@@ -43,6 +40,9 @@ def reset_state():
     expanded = []
     canvas.delete("all")
     running = False
+    previous_time = []
+    previous_fuel = []
+
 
 def on_algo_change(*args):
     global graph, agents, agent
@@ -138,11 +138,11 @@ def load_map(file_path):
                 color = 'black'
             elif map_data[i][j] == 'S':
                 color = 'green'
-            elif map_data[i][j] in ['G', 'G1', 'G2']:
+            elif map_data[i][j] in ['G', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10']:
                 color = 'red'
-            elif map_data[i][j] in ['F', 'F1']:
+            elif map_data[i][j] in ['F', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10']:
                 color = 'orange'
-            elif map_data[i][j] in ['S1', 'S2']:
+            elif map_data[i][j] in ['S', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10']:
                 color = 'light green'
             elif map_data[i][j] == '0':
                 color = 'white'
@@ -188,7 +188,12 @@ def highlight_next_step():
     global current_step
     global highlighted_cells
     global time_var
+    global fuel_var
     global running
+    global previous_time
+    global previous_fuel
+
+    selected_level = level_var.get()
 
     cells = expanded + path
     total_steps = len(cells)
@@ -206,14 +211,13 @@ def highlight_next_step():
     cell = cells[current_step]
 
     if current_step < expanded_steps:
-        if(len(highlighted_cells) > 0):
+        if len(highlighted_cells) > 0:
             highlight_cell(highlighted_cells[-1][0], 'yellow')
             highlighted_cells[-1] = (highlighted_cells[-1][0], 'yellow', highlighted_cells[-1][2])
 
         highlight_cell(cell, 'blue')
         highlighted_cells.append((cell, 'blue', text_items[cell][2]))
     else:
-        # Remove blue for the final expanded cell
         if current_step == expanded_steps:
             highlight_cell(cells[expanded_steps - 1], 'yellow')
             highlighted_cells[-1] = (highlighted_cells[-1][0], 'yellow', highlighted_cells[-1][2])
@@ -224,20 +228,29 @@ def highlight_next_step():
         highlight_cell(cell, color)
         highlighted_cells.append((cell, color, previous_color))
 
-        if current_step > expanded_steps:  # Do not subtract time for the first step
-            time_var.set(time_var.get() - 1)
+        if selected_level != "1" and current_step >= expanded_steps and current_step > expanded_steps:
+            previous_time.append(time_var.get())  # Save current time
+            previous_fuel.append(fuel_var.get())  # Save current fuel (if fuel_var is defined)
+            new_time = time_var.get() - 1
             if text_items[cell][1] is not None:
                 cell_value = canvas.itemcget(text_items[cell][1], 'text')
                 if cell_value.isdigit():
-                    time_var.set(time_var.get() - int(cell_value))
+                    new_time -= int(cell_value)
+            time_var.set(new_time)
+            previous_time[-1] = new_time  # Save the updated time after reducing
+            previous_fuel[-1] = fuel_var.get()
 
     current_step += 1
     time_entry.update_idletasks()
+    fuel_entry.update_idletasks()
+
 
 def highlight_previous_step():
     global current_step
     global highlighted_cells
     global running
+    global previous_time
+    global previous_fuel
 
     if len(path) == 0:
         messagebox.showinfo("Notification", "Path not found")
@@ -248,6 +261,33 @@ def highlight_previous_step():
         current_step -= 1
         cell, current_color, previous_color = highlighted_cells.pop()
         highlight_cell(cell, previous_color)
+
+        if current_step < len(expanded):
+            if len(highlighted_cells) > 0:
+                highlight_cell(highlighted_cells[-1][0], 'blue')
+        else:
+            if current_step == len(expanded):
+                highlight_cell(expanded[-1], 'blue')
+                highlight_cell(path[0], 'green')
+            elif current_step > len(expanded):
+                highlight_cell(path[0], 'green')
+                highlight_cell(path[-1], 'red')
+
+        # Restore time and fuel variables
+        if previous_time:
+            restored_time = previous_time.pop()
+            if text_items[cell][1] is not None:
+                cell_value = canvas.itemcget(text_items[cell][1], 'text')
+                if cell_value.isdigit():
+                    restored_time += int(cell_value)  # Restore cell value
+            time_var.set(restored_time + 1)  # Restore 1
+        if previous_fuel:
+            fuel_var.set(previous_fuel.pop())
+
+    time_entry.update_idletasks()
+    fuel_entry.update_idletasks()
+
+
 
 def highlight_cell(cell, color):
     global text_items
@@ -317,10 +357,10 @@ algo_frame.grid(row=1, column=3, padx=10, pady=10, sticky='w')
 algo_label = tk.Label(algo_frame, text="Searching algorithm:")
 algo_label.pack(side="left")
 
-algo_var = tk.StringVar(value="BFS")
-algo_dropdown = tk.OptionMenu(algo_frame, algo_var, "BFS", "DFS", "UCS", "GBFS", "A*")
+algo_var = tk.StringVar(value="A*")
+algo_dropdown = tk.OptionMenu(algo_frame, algo_var, "A*", "BFS", "DFS", "UCS", "GBFS")
 algo_dropdown.pack(side="left")
-algo_var.trace("w", on_algo_change)
+algo_var.trace_add("write", on_algo_change)
 
 # Canvas for visualization
 canvas = tk.Canvas(root, bg='light gray', width=600, height=400)
@@ -360,6 +400,5 @@ previous_step_button.grid(row=1, column=0, padx=5, pady=5)
 
 next_step_button = tk.Button(button_frame, text="Next Step", command=highlight_next_step)
 next_step_button.grid(row=1, column=1, padx=5, pady=5)
-
 
 root.mainloop()
