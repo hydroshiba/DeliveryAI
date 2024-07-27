@@ -90,9 +90,20 @@ def browse_file():
         path = search.path
         expanded = search.expanded
         time_var.set(agent.time)
+        fuel_var.set(0)
+        time_limit_var.set(agent.time)
+        fuel_limit_var.set(0)
+        path_cost_var.set(0)
+    elif level == '3':
+        search = FuelSearch()
+        search.run(graph, agent)
+        path = search.path
+        expanded = search.expanded
+        time_var.set(agent.time)
         fuel_var.set(agent.fuel)
-        time_limit_var.set(agent.time_limit)
-        fuel_limit_var.set(agent.fuel_limit)
+        time_limit_var.set(agent.time)
+        fuel_limit_var.set(agent.fuel)
+        path_cost_var.set(0)
 
 def load_map(file_path):
     global global_m, global_n
@@ -181,9 +192,20 @@ def on_level_change(*args):
         path = search.path
         expanded = search.expanded
         time_var.set(0)
+        fuel_var.set(0)
+        time_limit_var.set(agent.time)
+        fuel_limit_var.set(0)
+        path_cost_var.set(0)
+    elif selected_level == '3':
+        search = FuelSearch()
+        search.run(graph, agent)
+        path = search.path
+        expanded = search.expanded
+        time_var.set(0)
         fuel_var.set(agent.fuel)
         time_limit_var.set(agent.time)
         fuel_limit_var.set(agent.fuel)
+        path_cost_var.set(0)
 
 def highlight_next_step():
     global current_step, highlighted_cells, time_var, fuel_var, path_cost_var, running, previous_time, previous_fuel, previous_cost
@@ -228,15 +250,21 @@ def highlight_next_step():
             previous_fuel.append(fuel_var.get())  # Save current fuel (if fuel_var is defined)
             previous_cost.append(path_cost_var.get())  # Save current path cost
             new_time = time_var.get() + 1
+            new_fuel = fuel_var.get() - 1
             new_cost = path_cost_var.get() + 1
             if text_items[cell][1] is not None:
                 cell_value = canvas.itemcget(text_items[cell][1], 'text')
                 if cell_value.isdigit():
                     new_time += int(cell_value)
+                if cell_value.startswith('F'):
+                    new_fuel = int(fuel_limit_entry.get())  # Reset fuel to fuel limit
+                    new_time += 1
+
             time_var.set(new_time)
+            fuel_var.set(new_fuel)
             path_cost_var.set(new_cost)
             previous_time[-1] = new_time  # Save the updated time after reducing
-            previous_fuel[-1] = fuel_var.get()
+            previous_fuel[-1] = new_fuel
             previous_cost[-1] = new_cost
 
     current_step += 1
@@ -271,16 +299,27 @@ def highlight_previous_step():
 
         # Restore time, fuel, and cost variables
         if previous_time:
-            restofirebrick_time = previous_time.pop()
+            restored_time = previous_time.pop()
             if text_items[cell][1] is not None:
                 cell_value = canvas.itemcget(text_items[cell][1], 'text')
                 if cell_value.isdigit():
-                    restofirebrick_time -= int(cell_value)  # Restore cell value
-            time_var.set(restofirebrick_time - 1)  # Restore 1
-        if previous_fuel:
-            fuel_var.set(previous_fuel.pop())
+                    restored_time -= int(cell_value)  # Restore cell value
+                if cell_value.startswith('F'):
+                    restored_time -= 1
+            time_var.set(restored_time - 1)  # Restore 1
+        
+        restored_cost = 0
         if previous_cost:
-            path_cost_var.set(previous_cost.pop() - 1)
+            restored_cost = previous_cost.pop()
+            path_cost_var.set(restored_cost - 1) 
+
+        if previous_fuel:
+            restored_fuel = previous_fuel.pop()
+            if text_items[cell][1] is not None:
+                cell_value = canvas.itemcget(text_items[cell][1], 'text')
+                if cell_value.startswith('F'):
+                    restored_fuel -= restored_cost
+            fuel_var.set(restored_fuel + 1)
 
     time_entry.update_idletasks()
     fuel_entry.update_idletasks()
