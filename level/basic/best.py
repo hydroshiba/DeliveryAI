@@ -70,7 +70,7 @@ class Best(Search, ABC):
 				# Early goal test
 				if self._tag == EarlyTest and next == agent.end:
 					predecessor[next] = cur
-					self.trace(predecessor, cur)
+					self.trace(predecessor, next)
 					return
 				
 				new_cost = cost + self.cost(graph, agent, cur, next)
