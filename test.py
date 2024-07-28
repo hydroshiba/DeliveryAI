@@ -53,6 +53,11 @@ def on_algo_change(*args):
     load_map(file_path)
 
     selected_algo = algo_var.get()
+    time_var.set(0)
+    fuel_var.set(0)
+    time_limit_var.set(0)
+    fuel_limit_var.set(0)
+    path_cost_var.set(0)
     
     if selected_algo == "BFS":
         search = BFS()
@@ -245,27 +250,52 @@ def highlight_next_step():
         highlight_cell(cell, color)
         highlighted_cells.append((cell, color, previous_color))
 
-        if selected_level != "1" and current_step >= expanded_steps and current_step > expanded_steps:
+        if current_step > expanded_steps:
+            previous_cost.append(path_cost_var.get())  # Save current path cost
             previous_time.append(time_var.get())  # Save current time
             previous_fuel.append(fuel_var.get())  # Save current fuel (if fuel_var is defined)
-            previous_cost.append(path_cost_var.get())  # Save current path cost
-            new_time = time_var.get() + 1
-            new_fuel = fuel_var.get() - 1
+
             new_cost = path_cost_var.get() + 1
+            new_time = time_var.get() + (1 if int(selected_level) > 1 else 0)
+            new_fuel = fuel_var.get() - (1 if int(selected_level) > 2 else 0)
+
             if text_items[cell][1] is not None:
                 cell_value = canvas.itemcget(text_items[cell][1], 'text')
-                if cell_value.isdigit():
+                if int(selected_level) > 1 and cell_value.isdigit():
                     new_time += int(cell_value)
-                if cell_value.startswith('F'):
-                    new_fuel = int(fuel_limit_entry.get())  # Reset fuel to fuel limit
-                    new_time += 1
+                if int(selected_level) > 2 and cell_value.startswith('F'):
+                    new_fuel = int(fuel_limit_entry.get()) # Reset fuel to fuel limit
+                    new_time += int(cell_value[1:])
 
+            path_cost_var.set(new_cost)
             time_var.set(new_time)
             fuel_var.set(new_fuel)
-            path_cost_var.set(new_cost)
-            previous_time[-1] = new_time  # Save the updated time after reducing
-            previous_fuel[-1] = new_fuel
-            previous_cost[-1] = new_cost
+
+            previous_cost[-1] = new_cost  # Save the updated cost after increasing
+            previous_time[-1] = new_time  # Save the updated time after increasing
+            previous_fuel[-1] = new_fuel  # Save the updated fuel after increasing
+
+        # if selected_level != "1" and current_step >= expanded_steps and current_step > expanded_steps:
+        #     previous_time.append(time_var.get())  # Save current time
+        #     previous_fuel.append(fuel_var.get())  # Save current fuel (if fuel_var is defined)
+        #     previous_cost.append(path_cost_var.get())  # Save current path cost
+        #     new_time = time_var.get() + 1
+        #     new_fuel = fuel_var.get() - 1
+        #     new_cost = path_cost_var.get() + 1
+        #     if text_items[cell][1] is not None:
+        #         cell_value = canvas.itemcget(text_items[cell][1], 'text')
+        #         if cell_value.isdigit():
+        #             new_time += int(cell_value)
+        #         if cell_value.startswith('F'):
+        #             new_fuel = int(fuel_limit_entry.get())  # Reset fuel to fuel limit
+        #             new_time += 1
+
+        #     time_var.set(new_time)
+        #     fuel_var.set(new_fuel)
+        #     path_cost_var.set(new_cost)
+        #     previous_time[-1] = new_time  # Save the updated time after reducing
+        #     previous_fuel[-1] = new_fuel
+        #     previous_cost[-1] = new_cost
 
     current_step += 1
     time_entry.update_idletasks()
@@ -407,20 +437,14 @@ canvas.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky='nsew')
 info_frame = tk.Frame(root)
 info_frame.grid(row=4, column=0, columnspan=4, padx=10, pady=10, sticky='ew')
 
-time_limit_label = tk.Label(info_frame, text="Time Limit:")
-time_limit_label.grid(row=0, column=0, padx=10, pady=5, sticky='w')
+path_cost_label = tk.Label(info_frame, text="Path Cost:")
+path_cost_label.grid(row=0, column=0, padx=10, pady=5, sticky='w')
 
-time_limit_var = tk.IntVar(value=0)
-time_limit_entry = tk.Entry(info_frame, textvariable=time_limit_var, width=10)
-time_limit_entry.grid(row=0, column=1, padx=10, pady=5, sticky='w')
+path_cost_var = tk.IntVar(value=0)
+path_cost_entry = tk.Entry(info_frame, textvariable=path_cost_var, width=10)
+path_cost_entry.grid(row=0, column=1, padx=10, pady=5, sticky='w')
 
-fuel_limit_label = tk.Label(info_frame, text="Fuel Limit:")
-fuel_limit_label.grid(row=0, column=2, padx=10, pady=5, sticky='w')
-
-fuel_limit_var = tk.IntVar(value=0)
-fuel_limit_entry = tk.Entry(info_frame, textvariable=fuel_limit_var, width=10)
-fuel_limit_entry.grid(row=0, column=3, padx=10, pady=5, sticky='w')
-
+# Time Constraint
 time_label = tk.Label(info_frame, text="Time:")
 time_label.grid(row=1, column=0, padx=10, pady=5, sticky='w')
 
@@ -428,19 +452,27 @@ time_var = tk.IntVar(value=0)
 time_entry = tk.Entry(info_frame, textvariable=time_var, width=10)
 time_entry.grid(row=1, column=1, padx=10, pady=5, sticky='w')
 
+time_limit_label = tk.Label(info_frame, text="Time Limit:")
+time_limit_label.grid(row=1, column=2, padx=10, pady=5, sticky='w')
+
+time_limit_var = tk.IntVar(value=0)
+time_limit_entry = tk.Entry(info_frame, textvariable=time_limit_var, width=10)
+time_limit_entry.grid(row=1, column=3, padx=10, pady=5, sticky='w')
+
+# Fuel Constraint
 fuel_label = tk.Label(info_frame, text="Fuel:")
-fuel_label.grid(row=1, column=2, padx=10, pady=5, sticky='w')
+fuel_label.grid(row=2, column=0, padx=10, pady=5, sticky='w')
 
 fuel_var = tk.IntVar(value=0)
 fuel_entry = tk.Entry(info_frame, textvariable=fuel_var, width=10)
-fuel_entry.grid(row=1, column=3, padx=10, pady=5, sticky='w')
+fuel_entry.grid(row=2, column=1, padx=10, pady=5, sticky='w')
 
-path_cost_label = tk.Label(info_frame, text="Path Cost:")
-path_cost_label.grid(row=2, column=0, padx=10, pady=5, sticky='w')
+fuel_limit_label = tk.Label(info_frame, text="Fuel Capacity:")
+fuel_limit_label.grid(row=2, column=2, padx=10, pady=5, sticky='w')
 
-path_cost_var = tk.IntVar(value=0)
-path_cost_entry = tk.Entry(info_frame, textvariable=path_cost_var, width=10)
-path_cost_entry.grid(row=2, column=1, padx=10, pady=5, sticky='w')
+fuel_limit_var = tk.IntVar(value=0)
+fuel_limit_entry = tk.Entry(info_frame, textvariable=fuel_limit_var, width=10)
+fuel_limit_entry.grid(row=2, column=3, padx=10, pady=5, sticky='w')
 
 # Control Buttons
 button_frame = tk.Frame(root)
