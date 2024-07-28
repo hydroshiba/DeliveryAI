@@ -388,7 +388,6 @@ root = tk.Tk()
 root.title("Delivery Path Finder")
 # Set the main window background color
 root.configure(bg='')
-root.geometry("700x700")
 root.resizable(False, False)
 
 # Configure the grid layout
