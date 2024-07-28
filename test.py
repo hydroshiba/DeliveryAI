@@ -238,7 +238,8 @@ def highlight_next_step():
             highlighted_cells[-1] = (highlighted_cells[-1][0], 'royal blue', highlighted_cells[-1][2])
 
         highlight_cell(cell, 'navy blue')
-        highlighted_cells.append((cell, 'navy blue', text_items[cell][2]))
+        previous_color = 'royal blue' if (cell, 'royal blue', text_items[cell][2]) in highlighted_cells else text_items[cell][2]
+        highlighted_cells.append((cell, 'navy blue', previous_color))
     else:
         if current_step == expanded_steps:
             highlight_cell(cells[expanded_steps - 1], 'royal blue')
