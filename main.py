@@ -29,7 +29,7 @@ text_items = {}  # Dictionary to store text items
 
 # Initialize variables for automatic stepping
 running = False
-step_delay = 100  # Delay in milliseconds
+step_delay = 252  # Delay in milliseconds
 
 def reset_state():
     global current_step, highlighted_cells, text_items, path, expanded, running, previous_time, previous_fuel, previous_cost
@@ -467,7 +467,7 @@ animation_speed = tk.IntVar(value=1)
 speed_slider_label = tk.Label(info_frame, text="Animation Speed:")
 speed_slider_label.grid(row=0, column=2, padx=10, pady=5, sticky='w')
 
-speed_slider = tk.Scale(info_frame, from_=1, to=5, orient='horizontal', variable=animation_speed)
+speed_slider = tk.Scale(info_frame, from_=1, to=10, orient='horizontal', variable=animation_speed)
 speed_slider.grid(row=0, column=3, padx=10, pady=5, sticky='w')
 
 # Previous and Next Step Buttons
