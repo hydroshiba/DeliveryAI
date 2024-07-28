@@ -94,7 +94,7 @@ def browse_file():
         search.run(graph, agent)
         path = search.path
         expanded = search.expanded
-        time_var.set(agent.time)
+        time_var.set(0)
         fuel_var.set(0)
         time_limit_var.set(agent.time)
         fuel_limit_var.set(0)
@@ -104,7 +104,7 @@ def browse_file():
         search.run(graph, agent)
         path = search.path
         expanded = search.expanded
-        time_var.set(agent.time)
+        time_var.set(0)
         fuel_var.set(agent.fuel)
         time_limit_var.set(agent.time)
         fuel_limit_var.set(agent.fuel)
@@ -388,6 +388,8 @@ root = tk.Tk()
 root.title("Delivery Path Finder")
 # Set the main window background color
 root.configure(bg='')
+root.geometry("700x700")
+root.resizable(False, False)
 
 # Configure the grid layout
 root.columnconfigure(1, weight=1)
@@ -400,7 +402,7 @@ input_file_frame.grid(row=0, column=0, columnspan=4, padx=10, pady=10, sticky='e
 input_file_label = tk.Label(input_file_frame, text="Input File")
 input_file_label.pack(side="left")
 
-input_file_entry = tk.Entry(input_file_frame, width=80)
+input_file_entry = tk.Entry(input_file_frame, width=90)
 input_file_entry.pack(side="left", padx=10)
 
 browse_button = tk.Button(input_file_frame, text="Browse", command=browse_file)
