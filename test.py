@@ -343,7 +343,7 @@ def run_steps():
     global running
     if running:
         highlight_next_step()
-        root.after(step_delay, run_steps)
+        root.after(step_delay // int(animation_speed.get()), run_steps)
 
 def start_running():
     global running, current_step
@@ -462,6 +462,13 @@ run_button.grid(row=0, column=0, padx=5, pady=5)
 
 pause_button = tk.Button(button_frame, text="Pause", command=stop_running)
 pause_button.grid(row=0, column=1, padx=5, pady=5)
+
+animation_speed = tk.IntVar(value=1)
+speed_slider_label = tk.Label(info_frame, text="Animation Speed:")
+speed_slider_label.grid(row=0, column=2, padx=10, pady=5, sticky='w')
+
+speed_slider = tk.Scale(info_frame, from_=1, to=5, orient='horizontal', variable=animation_speed)
+speed_slider.grid(row=0, column=3, padx=10, pady=5, sticky='w')
 
 # Previous and Next Step Buttons
 previous_step_button = tk.Button(button_frame, text="Previous Step", command=highlight_previous_step)
