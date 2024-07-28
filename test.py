@@ -276,28 +276,6 @@ def highlight_next_step():
             previous_time[-1] = new_time  # Save the updated time after increasing
             previous_fuel[-1] = new_fuel  # Save the updated fuel after increasing
 
-        # if selected_level != "1" and current_step >= expanded_steps and current_step > expanded_steps:
-        #     previous_time.append(time_var.get())  # Save current time
-        #     previous_fuel.append(fuel_var.get())  # Save current fuel (if fuel_var is defined)
-        #     previous_cost.append(path_cost_var.get())  # Save current path cost
-        #     new_time = time_var.get() + 1
-        #     new_fuel = fuel_var.get() - 1
-        #     new_cost = path_cost_var.get() + 1
-        #     if text_items[cell][1] is not None:
-        #         cell_value = canvas.itemcget(text_items[cell][1], 'text')
-        #         if cell_value.isdigit():
-        #             new_time += int(cell_value)
-        #         if cell_value.startswith('F'):
-        #             new_fuel = int(fuel_limit_entry.get())  # Reset fuel to fuel limit
-        #             new_time += 1
-
-        #     time_var.set(new_time)
-        #     fuel_var.set(new_fuel)
-        #     path_cost_var.set(new_cost)
-        #     previous_time[-1] = new_time  # Save the updated time after reducing
-        #     previous_fuel[-1] = new_fuel
-        #     previous_cost[-1] = new_cost
-
     current_step += 1
     time_entry.update_idletasks()
     fuel_entry.update_idletasks()
@@ -306,6 +284,7 @@ def highlight_next_step():
 
 def highlight_previous_step():
     global current_step, highlighted_cells, running, previous_time, previous_fuel, previous_cost
+    selected_level = level_var.get()
 
     if len(path) == 0:
         messagebox.showinfo("Notification", "Path not found")
@@ -324,12 +303,14 @@ def highlight_previous_step():
             if current_step == len(expanded):
                 highlight_cell(expanded[-1], 'navy blue')
                 highlight_cell(path[0], 'sea green')
-            elif current_step > len(expanded):
-                highlight_cell(path[0], 'sea green')
-                highlight_cell(path[-1], 'firebrick')
 
         # Restore time, fuel, and cost variables
-        if previous_time:
+        restored_cost = 0
+        if previous_cost:
+            restored_cost = previous_cost.pop()
+            path_cost_var.set(restored_cost - 1) 
+
+        if int(selected_level) > 1 and previous_time:
             restored_time = previous_time.pop()
             if text_items[cell][1] is not None:
                 cell_value = canvas.itemcget(text_items[cell][1], 'text')
@@ -338,13 +319,8 @@ def highlight_previous_step():
                 if cell_value.startswith('F'):
                     restored_time -= 1
             time_var.set(restored_time - 1)  # Restore 1
-        
-        restored_cost = 0
-        if previous_cost:
-            restored_cost = previous_cost.pop()
-            path_cost_var.set(restored_cost - 1) 
 
-        if previous_fuel:
+        if int(selected_level) > 2 and previous_fuel:
             restored_fuel = previous_fuel.pop()
             if text_items[cell][1] is not None:
                 cell_value = canvas.itemcget(text_items[cell][1], 'text')
@@ -439,6 +415,7 @@ canvas.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky='nsew')
 info_frame = tk.Frame(root)
 info_frame.grid(row=4, column=0, columnspan=4, padx=10, pady=10, sticky='ew')
 
+# Path Cost
 path_cost_label = tk.Label(info_frame, text="Path Cost:")
 path_cost_label.grid(row=0, column=0, padx=10, pady=5, sticky='w')
 
