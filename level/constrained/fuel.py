@@ -39,7 +39,6 @@ class FuelSearch(Search):
 
 		if u_sum != v_sum: return u_sum < v_sum
 		if u._time != v._time: return u._time < v._time
-		if u._fuel != v._fuel: return u._fuel < v._fuel
 
 		return u._state < v._state
 
