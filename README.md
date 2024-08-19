@@ -1,10 +1,10 @@
 # Introduction to Artificial Intelligence: Delivery AI Project
 
 **Built by:**
-- Phan Hải Minh (<a href="https://github.com/hydroshiba" style="text-decoration:none">@hydroshiba</a>)
-- Mai Đức Duy (<a href="https://github.com/EvDDD" style="text-decoration:none">@EvDDD</a>)
-- Nguyễn Trần Minh Hoàng (<a href="https://github.com/hoangcoderne" style="text-decoration:none">@hoangcoderne</a>)
-- Trần Thành Long (<a href="https://github.com/lib2509" style="text-decoration:none">@lib2509</a>)
+- Phan Hải Minh ([@hydroshiba](https://github.com/hydroshiba))
+- Mai Đức Duy ([@EvDDD](https://github.com/EvDDD))
+- Nguyễn Trần Minh Hoàng ([@hoangcoderne](https://github.com/hoangcoderne))
+- Trần Thành Long ([@lib2509](https://github.com/lib2509))
 
 During our course **CSC14003: Introduction to Artificial Intelligence** we explored searching problems and how to solve them using various algorithms. This project is a simulation of a deliveryman with the task of delivering packages to customers on a map. The deliveryman has to find the shortest path to arrive at the destination under several constraints including time limit and fuel capacity.
 
